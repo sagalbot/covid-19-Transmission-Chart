@@ -1,5 +1,9 @@
 const purgecss = require("@fullhuman/postcss-purgecss")({
-  content: ["./public/**/*.html", "./src/**/*.vue"],
+  content: [
+    "./public/**/*.html",
+    "./src/**/*.vue",
+    "./node_modules/vue-select/dist/vue-select.css"
+  ],
   defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || []
 });
 
