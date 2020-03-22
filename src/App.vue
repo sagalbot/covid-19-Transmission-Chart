@@ -8,15 +8,16 @@
         COVID-19 Localized Transmission Rates
       </h1>
       <v-select
+        v-model="selected"
         :disabled="loading"
         :options="countries"
-        multiple
         :placeholder="loading ? `Loading..` : `Choose some countries`"
       />
     </header>
 
     <main class="flex flex-1 h-full items-center justify-center">
       <Loading v-if="loading" />
+      <GChart type="LineChart" :data="chartData" class="w-full h-full" />
     </main>
   </div>
 </template>
@@ -31,7 +32,7 @@ export default {
   components: { Loading, vSelect },
   data: () => ({
     loading: false,
-    selected: []
+    selected: "Canada"
   }),
   mounted() {
     this.fetchData();
@@ -51,7 +52,20 @@ export default {
     }
   },
   computed: {
-    countries: () => Object.keys(state.countries) || []
+    countries: () => Object.keys(state.countries) || [],
+    chartData() {
+      return [
+        ["date", "confirmed", "deaths", "recovered"],
+        ...state.countries[
+          this.selected
+        ].map(({ date, confirmed, deaths, recovered }) => [
+          date,
+          confirmed,
+          deaths,
+          recovered
+        ])
+      ];
+    }
   }
 };
 </script>
