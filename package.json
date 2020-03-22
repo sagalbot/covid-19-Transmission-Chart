@@ -18,6 +18,7 @@
     "vue-select": "^3.9.4"
   },
   "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^2.1.0",
     "@vue/cli-plugin-babel": "~4.2.0",
     "@vue/cli-plugin-eslint": "~4.2.0",
     "@vue/cli-plugin-pwa": "~4.2.0",
