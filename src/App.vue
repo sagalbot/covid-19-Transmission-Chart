@@ -15,13 +15,21 @@
           v-if="sidebar"
           class="overflow-y-scroll max-h-full pr-3 mr-3 countries relative text-gray-700"
         >
-          <li class="mb-2 sticky top-0">
+          <li class="mb-2 sticky top-0 bg-white">
             <input
               type="search"
               v-model="countryFilter"
               placeholder="filter this list..."
               class="border-2 border-gray-300 w-full px-1 py-1"
             />
+            <div class="flex justify-between mt-2">
+              <button
+                class="py-1 px-2 border-gray-200 border rounded"
+                @click="selected = []"
+              >
+                clear selected
+              </button>
+            </div>
           </li>
           <li
             v-for="{ country, cases } in casesPerCountry"
