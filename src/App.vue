@@ -34,16 +34,17 @@
 
 <script>
 import axios from "axios";
+import vSelect from "vue-select";
+import { intersection } from "lodash-es";
 import state from "./state";
 import Loading from "./components/Loading";
-import vSelect from "vue-select";
-import { flatten, intersection, intersectionBy } from "lodash-es";
+
 export default {
   name: "App",
   components: { Loading, vSelect },
   data: () => ({
     loading: false,
-    selected: ["Canada", "Japan"]
+    selected: []
   }),
   mounted() {
     this.fetchData();
