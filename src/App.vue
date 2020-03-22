@@ -9,6 +9,7 @@
       </h1>
       <v-select
         v-model="selected"
+        multiple
         :disabled="loading"
         :options="countries"
         :placeholder="loading ? `Loading..` : `Choose some countries`"
@@ -19,9 +20,11 @@
       <transition name="fade" type="out-in">
         <Loading v-if="loading" />
         <GChart
-          v-else
+          v-else-if="!loading && this.selected.length"
           type="LineChart"
           :data="chartData"
+          :settings="{ packages: ['line'] }"
+          :createChart="(el, google) => new google.charts.Line(el)"
           class="w-full flex-1 chart"
         />
       </transition>
@@ -34,12 +37,13 @@ import axios from "axios";
 import state from "./state";
 import Loading from "./components/Loading";
 import vSelect from "vue-select";
+import { flatten, intersection, intersectionBy } from "lodash-es";
 export default {
   name: "App",
   components: { Loading, vSelect },
   data: () => ({
     loading: false,
-    selected: "Canada"
+    selected: ["Canada", "Japan"]
   }),
   mounted() {
     this.fetchData();
@@ -61,17 +65,47 @@ export default {
   computed: {
     countries: () => Object.keys(state.countries) || [],
     chartData() {
-      return [
-        ["date", "confirmed", "deaths", "recovered"],
-        ...state.countries[
-          this.selected
-        ].map(({ date, confirmed, deaths, recovered }) => [
-          date,
-          confirmed,
-          deaths,
-          recovered
-        ])
-      ];
+      if (
+        this.selected &&
+        this.selected.length === 1 &&
+        state.countries[this.selected[0]]
+      ) {
+        return [
+          ["date", "confirmed", "deaths", "recovered"],
+          ...state.countries[
+            this.selected
+          ].map(({ date, confirmed, deaths, recovered }) => [
+            date,
+            confirmed,
+            deaths,
+            recovered
+          ])
+        ];
+      }
+
+      if (this.selected && this.selected.length >= 2) {
+        const dateRange = intersection(
+          ...this.selected.map(country =>
+            state.countries[country].map(({ date }) => date)
+          )
+        );
+
+        const plot = dateRange.map(date => {
+          return [
+            date,
+            ...this.selected.map(country => {
+              return (
+                state.countries[country].find(data => data.date === date)
+                  .confirmed || 0
+              );
+            })
+          ];
+        });
+
+        return [["date", ...this.selected], ...plot];
+      }
+
+      return [];
     }
   }
 };
