@@ -1,28 +1,63 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+  <div
+    id="app"
+    class="flex flex-col container mx-auto p-10 h-full min-h-screen"
+  >
+    <header class="flex justify-between items-center mb-4">
+      <h1 class="text-gray-800 text-xl font-bold">
+        COVID-19 Localized Transmission Rates
+      </h1>
+      <v-select
+        :disabled="loading"
+        :options="countries"
+        multiple
+        :placeholder="loading ? `Loading..` : `Choose some countries`"
+      />
+    </header>
+
+    <main class="flex flex-1 h-full items-center justify-center">
+      <Loading v-if="loading" />
+    </main>
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
-
+import axios from "axios";
+import state from "./state";
+import Loading from "./components/Loading";
+import vSelect from "vue-select";
 export default {
   name: "App",
-  components: {
-    HelloWorld
+  components: { Loading, vSelect },
+  data: () => ({
+    loading: false,
+    selected: []
+  }),
+  mounted() {
+    this.fetchData();
+  },
+  methods: {
+    async fetchData() {
+      this.loading = true;
+      try {
+        const { data } = await axios.get(
+          "https://pomber.github.io/covid19/timeseries.json"
+        );
+        state.countries = data;
+      } catch (e) {
+        console.error(e);
+      }
+      this.loading = false;
+    }
+  },
+  computed: {
+    countries: () => Object.keys(state.countries) || []
   }
 };
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+.v-select {
+  min-width: 300px;
 }
 </style>
