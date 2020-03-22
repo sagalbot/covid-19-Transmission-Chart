@@ -15,9 +15,16 @@
       />
     </header>
 
-    <main class="flex flex-1 h-full items-center justify-center">
-      <Loading v-if="loading" />
-      <GChart type="LineChart" :data="chartData" class="w-full h-full" />
+    <main class="flex flex-col flex-1 h-full items-center justify-center">
+      <transition name="fade" type="out-in">
+        <Loading v-if="loading" />
+        <GChart
+          v-else
+          type="LineChart"
+          :data="chartData"
+          class="w-full flex-1 chart"
+        />
+      </transition>
     </main>
   </div>
 </template>
@@ -73,5 +80,8 @@ export default {
 <style>
 .v-select {
   min-width: 300px;
+}
+.chart {
+  max-height: 500px;
 }
 </style>
