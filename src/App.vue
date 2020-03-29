@@ -233,9 +233,3 @@ export default {
   }
 };
 </script>
-
-<style>
-.v-select {
-  min-width: 300px;
-}
-</style>

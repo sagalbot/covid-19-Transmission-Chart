@@ -3,3 +3,19 @@
 @tailwind components;
 
 @tailwind utilities;
+
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to {
+    opacity: 0;
+}
+
+.slide-left-enter-active, .slide-left-leave-active {
+    transition: transform .5s, opacity .5s;
+}
+.slide-left-enter, .slide-left-leave-to {
+    opacity: 0;
+    transform: translateY(-100%);
+}

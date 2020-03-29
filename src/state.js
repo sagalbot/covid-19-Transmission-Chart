@@ -1,5 +1,7 @@
 import Vue from "vue";
 
 export default Vue.observable({
-  countries: {}
+  countries: {},
+  loading: false,
+
 });
