@@ -6,6 +6,10 @@
       <h1 class="text-gray-500 text-xl font-bold leading-none">
         COVID-19 Confirmed Cases
       </h1>
+      <label>
+        <input v-model="daysSinceOneHundred" type="checkbox" /> Days Since 100
+        Cases
+      </label>
     </header>
 
     <main class="flex flex-1 overflow-y-hidden">
@@ -79,10 +83,11 @@ export default {
   name: "App",
   components: { Loading },
   data: () => ({
-    loading: false,
-    selected: [],
+    loading: true,
+    selected: ["Canada", "Italy"],
     countryFilter: "",
-    sidebar: true
+    sidebar: true,
+    daysSinceOneHundred: true
   }),
   mounted() {
     this.fetchData();
@@ -102,30 +107,110 @@ export default {
     }
   },
   computed: {
-    countries: () => Object.keys(state.countries) || [],
+    countries() {
+      if (state.countries.length === 0) {
+        return {};
+      }
+
+      return this.daysSinceOneHundred
+        ? this.countriesWithOverOneHundredCases
+        : state.countries;
+    },
     casesPerCountry() {
-      return Object.keys(state.countries)
+      return Object.keys(this.countries)
         .filter(country =>
           country.toLowerCase().includes(this.countryFilter.toLowerCase())
         )
         .map(country => ({
           country,
-          cases:
-            state.countries[country][state.countries[country].length - 1]
-              .confirmed
+          cases: this.countries[country][this.countries[country].length - 1]
+            .confirmed
         }))
         .sort((a, b) => a.cases - b.cases)
         .reverse();
     },
+    countriesWithOverOneHundredCases() {
+      const countriesWithOverOneHundredCases = {};
+
+      for (let country in state.countries) {
+        let cases = state.countries[country].filter(
+          ({ confirmed }) => confirmed >= 100
+        );
+
+        if (cases.length !== 0) {
+          countriesWithOverOneHundredCases[country] = cases;
+        }
+      }
+
+      return countriesWithOverOneHundredCases;
+    },
+    hundredthCaseChartData() {
+      if (this.loading) {
+        return false;
+      }
+
+      const duration = this.selected.reduce(
+        (daysSinceOneHundredthCase, country, index) => {
+          if (daysSinceOneHundredthCase > this.countries[country].length) {
+            return daysSinceOneHundredthCase;
+          }
+          return this.countries[country].length;
+        },
+        0
+      );
+
+      const plot = Array.from({ length: duration }).map((num, index) => {
+        return [
+          index,
+          ...this.selected.map(country => {
+            if (this.countries[country][index]) {
+              return this.countries[country][index].confirmed;
+            }
+            return null;
+          })
+        ];
+      });
+
+      return [["days since 100th case", ...this.selected], ...plot];
+    },
+    comparativeTimelineChartData() {
+      if (this.loading) {
+        return false;
+      }
+
+      const dateRange = intersection(
+        ...this.selected.map(country =>
+          this.countries[country].map(({ date }) => date)
+        )
+      );
+
+      const plot = dateRange.map(date => {
+        return [
+          date,
+          ...this.selected.map(country => {
+            return (
+              this.countries[country].find(data => data.date === date)
+                .confirmed || 0
+            );
+          })
+        ];
+      });
+
+      return [["date", ...this.selected], ...plot];
+    },
     chartData() {
+      if (this.loading) {
+        return false;
+      }
+
       if (
         this.selected &&
         this.selected.length === 1 &&
-        state.countries[this.selected[0]]
+        this.countries[this.selected[0]]
       ) {
         return [
           ["date", "confirmed", "deaths", "recovered"],
-          ...state.countries[
+          ...this.countries[
             this.selected
           ].map(({ date, confirmed, deaths, recovered }) => [
             date,
@@ -137,25 +222,10 @@ export default {
       }
 
       if (this.selected && this.selected.length >= 2) {
-        const dateRange = intersection(
-          ...this.selected.map(country =>
-            state.countries[country].map(({ date }) => date)
-          )
-        );
-
-        const plot = dateRange.map(date => {
-          return [
-            date,
-            ...this.selected.map(country => {
-              return (
-                state.countries[country].find(data => data.date === date)
-                  .confirmed || 0
-              );
-            })
-          ];
-        });
-
-        return [["date", ...this.selected], ...plot];
+        if (this.daysSinceOneHundred) {
+          return this.hundredthCaseChartData;
+        }
+        return this.comparativeTimelineChartData;
       }
 
       return [];
