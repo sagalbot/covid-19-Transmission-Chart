@@ -84,10 +84,10 @@ export default {
   components: { Loading },
   data: () => ({
     loading: true,
-    selected: ["Canada", "Italy"],
+    selected: [],
     countryFilter: "",
     sidebar: true,
-    daysSinceOneHundred: true
+    daysSinceOneHundred: false
   }),
   mounted() {
     this.fetchData();
